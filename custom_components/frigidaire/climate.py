@@ -27,8 +27,11 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN
+from .utils import debounce
 
 _LOGGER = logging.getLogger(__name__)
+
+DEBOUNCE_TIME_SECONDS = 1
 
 
 async def async_setup_entry(
@@ -259,6 +262,7 @@ class FrigidaireClimate(ClimateEntity):
             ),
         }
 
+    @debounce(wait_time_seconds=DEBOUNCE_TIME_SECONDS)
     def set_temperature(self, **kwargs):
         """Set new target temperature."""
         temperature = kwargs.get(ATTR_TEMPERATURE)
@@ -270,6 +274,7 @@ class FrigidaireClimate(ClimateEntity):
             self._appliance, frigidaire.Action.set_temperature(temperature)
         )
 
+    @debounce(wait_time_seconds=DEBOUNCE_TIME_SECONDS)
     def set_fan_mode(self, fan_mode):
         """Set new target fan mode."""
         # Guard against unexpected fan modes
@@ -279,6 +284,7 @@ class FrigidaireClimate(ClimateEntity):
         action = frigidaire.Action.set_fan_speed(HA_TO_FRIGIDAIRE_FAN_MODE[fan_mode])
         self._client.execute_action(self._appliance, action)
 
+    @debounce(wait_time_seconds=DEBOUNCE_TIME_SECONDS)
     def set_hvac_mode(self, hvac_mode):
         """Set new target operation mode."""
         if hvac_mode == HVAC_MODE_OFF:
@@ -302,6 +308,7 @@ class FrigidaireClimate(ClimateEntity):
             frigidaire.Action.set_mode(HA_TO_FRIGIDAIRE_HVAC_MODE[hvac_mode]),
         )
 
+    @debounce(wait_time_seconds=DEBOUNCE_TIME_SECONDS)
     def update(self):
         """Retrieve latest state and updates the details."""
         try:
